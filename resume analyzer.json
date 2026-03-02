@@ -1,0 +1,67 @@
+{
+  "name": "resume analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resume-analyze",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b193eddf-de76-41f2-a9bb-92f763accc4c",
+      "name": "Webhook",
+      "webhookId": "1beab376-114d-4c53-b6ca-ba00056ea892"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:5050/analyze",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={   \"pdfPath\": \"{{$json.body.pdfPath}}\",   \"jobDescription\": \"{{$json.body.jobDescription}}\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "dca72678-41fd-421c-9785-34c6fa05cc8c",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d705602a-f774-4321-96a4-c002d84b1226",
+  "meta": {
+    "instanceId": "1693504ceff83841795abbe17fb2f03bfae1b00f86d36ad870fb1bdef2ad4189"
+  },
+  "id": "VTfGaHmj9MH3Qotf",
+  "tags": []
+}
