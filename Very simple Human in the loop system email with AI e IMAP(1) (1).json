@@ -1,0 +1,342 @@
+{
+  "name": "Very simple Human in the loop system email with AI e IMAP",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ad5773c2-2d89-448b-8215-cb1d410a9753",
+      "name": "Email Trigger (IMAP)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "position": [
+        -208,
+        400
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.textHtml }}",
+        "options": {}
+      },
+      "id": "2184ab18-82bf-48aa-82b8-6c4567cb67f2",
+      "name": "Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        64,
+        400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('Email Trigger (IMAP)').item.json.to }}",
+        "toEmail": "={{ $('Email Trigger (IMAP)').item.json.from }}",
+        "subject": "=Re: {{ $('Email Trigger (IMAP)').item.json.subject }}",
+        "html": "={{ $('Set Email text').item.json.email }}",
+        "options": {}
+      },
+      "id": "c40fd437-7266-446a-ad46-c61fbe25a1bd",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        2032,
+        384
+      ],
+      "webhookId": "a79ae1b4-648c-4cb4-b6cd-04ea3c1d9314",
+      "typeVersion": 2.1,
+      "credentials": {
+        "smtp": {
+          "id": "6cdGj46PpT9jT02u",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operationMode": "nodeInputBinary",
+        "options": {
+          "binaryDataKey": "={{ $json.data }}",
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "combineMapPrompt": "=Write a concise summary of the following in max 100 words:\n\n\"{{ $json.data }}\"\n\nDo not enter the total number of words used.",
+              "prompt": "=Write a concise summary of the following in max 100 words:\n\n\"{{ $json.data }}\"\n\nDo not enter the total number of words used."
+            }
+          }
+        }
+      },
+      "id": "4e37eb09-95f0-4153-8946-cadbfe5dff28",
+      "name": "Email Summarization Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "position": [
+        320,
+        400
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write the text to reply to the following email:\n\n{{ $json.response.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert at answering emails. You need to answer them professionally based on the information you have. This is a business email. Be concise and never exceed 100 words. Only the body of the email, not create the subject"
+        }
+      },
+      "id": "18f8532a-977a-4479-a350-70994fd232a8",
+      "name": "Write email",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        768,
+        400
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "a0cd0406-881f-498e-9f21-6c666a2d5725",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        704,
+        624
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "gI8tQJKs6h9NTGXH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "fromEmail": "info@n3witalia.com",
+        "toEmail": "info@n3witalia.com",
+        "subject": "=[Approval Required] {{ $('Email Trigger (IMAP)').item.json.subject }}",
+        "message": "=<h3>MESSAGE</h3>\n{{ $('Email Trigger (IMAP)').item.json.textHtml }}\n\n<h3>AI RESPONSE</h3>\n{{ $json.email }}",
+        "options": {}
+      },
+      "id": "05a15912-0dc8-4f51-a58d-afbb6ea9d9d3",
+      "name": "Approve Email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        1488,
+        400
+      ],
+      "webhookId": "4f9f06e7-9b2b-4896-9b51-245972341d12",
+      "typeVersion": 2.1,
+      "credentials": {
+        "smtp": {
+          "id": "6cdGj46PpT9jT02u",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "deepseek-chat",
+          "cachedResultName": "deepseek-chat"
+        },
+        "options": {}
+      },
+      "id": "6f71fa7f-a312-4c13-a02e-afd7bf8b1567",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        256,
+        640
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "gI8tQJKs6h9NTGXH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35d7c303-42f4-4dd1-b41e-6eb087c23c3d",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "55f34948-8065-4d1e-9a08-ce7f1724843a",
+      "name": "Set Email text",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1200,
+        400
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "62e26bc5-1732-4699-a602-99490c7406fd",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f9905932-b9da-4fb7-8d62-8b07c7c302e7",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1792,
+        400
+      ],
+      "typeVersion": 2.2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Email Summarization Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write email": {
+      "main": [
+        [
+          {
+            "node": "Set Email text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve Email": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email text": {
+      "main": [
+        [
+          {
+            "node": "Approve Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Summarization Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Summarization Chain": {
+      "main": [
+        [
+          {
+            "node": "Write email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "cd57be32-f5f3-4b12-bcf1-3e055442086e",
+  "meta": {
+    "instanceId": "4986ffbeb301de8725d0c541e30c4ccdf8d5204d3525cdd84815e9ec256a4f64"
+  },
+  "id": "lYWCjzxaptHcjMxQ",
+  "tags": []
+}
